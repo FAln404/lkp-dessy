@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Admin | LKP Dessy</title>
+    <link rel="stylesheet" href="css/admin.css" />
+  </head>
+  <body>
+    <main class="admin-container">
+      <h1>📋 Control Admin</h1>
+
+      <section class="kuota-section">
+        <p><strong>Kuota Maksimum:</strong> <span id="maxQuota">--</span></p>
+        <p>
+          <strong>Pendaftar Saat Ini:</strong> <span id="currentCount">--</span>
+        </p>
+        <p><strong>Sisa Kuota:</strong> <span id="remainingQuota">--</span></p>
+        <input
+          type="number"
+          id="newQuota"
+          placeholder="Ubah kuota (misal 50)"
+        />
+        <button id="updateQuota">💾 Simpan Kuota</button>
+      </section>
+
+      <section class="banner-section">
+  <h2>🖼️ Update Banner</h2>
+
+  <!-- Upload Gambar -->
+  <input type="file" id="bannerInput" accept="image/*" />
+
+  <!-- JUDUL BANNER (BARU) -->
+  <input
+    type="text"
+    id="bannerTitleInput"
+    placeholder="Masukkan judul banner"
+    style="width:100%; margin-top:10px"
+  />
+
+  <!-- DESKRIPSI BANNER -->
+  <textarea
+    id="bannerDescription"
+    placeholder="Masukkan deskripsi banner"
+    rows="3"
+    style="width:100%; margin-top:10px"
+  ></textarea>
+
+  <button id="saveDescriptionBtn">💾 Simpan Banner</button>
+
+  <img
+    id="bannerPreview"
+    style="max-width:100%; margin-top:10px"
+  />
+</section>
+
+
+
+      <div class="table-container">
+        <table id="dataTable">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama</th>
+              <th>Email</th>
+              <th>Pendidikan</th>
+              <th>Tanggal Lahir</th>
+              <th>Jenis Kelamin</th>
+              <th>Alamat</th>
+              <th>No. Telepon</th>
+              <th>Tanggal Daftar</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+      <button id="exportExcel">⬇️ Ekspor ke Excel</button>
+    </main>
+
+<!-- Firebase SDK TIDAK perlu ditulis ulang -->
+
+<!-- SheetJS (boleh non-module) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<!-- Firebase Config -->
+<script type="module" src="js/firebase-config.js"></script>
+
+<!-- Admin realtime -->
+<script type="module" src="js/admin-realtime.js"></script>
+
+   <script type="module">
+  import { db } from "./js/firebase-config.js";
+  import { ref, update, onValue } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  const bannerInput = document.getElementById("bannerInput");
+  const bannerPreview = document.getElementById("bannerPreview");
+  const bannerTitleInput = document.getElementById("bannerTitleInput");
+  const bannerDescription = document.getElementById("bannerDescription");
+  const saveBtn = document.getElementById("saveDescriptionBtn");
+
+  // Preview gambar
+  bannerInput.addEventListener("change", () => {
+    const file = bannerInput.files[0];
+    if (file) {
+      bannerPreview.src = URL.createObjectURL(file);
+    }
+  });
+
+  // LOAD DATA LAMA (judul + deskripsi)
+  onValue(ref(db, "banner"), (snapshot) => {
+    if (!snapshot.exists()) return;
+
+    const data = snapshot.val();
+    bannerTitleInput.value = data.title || "";
+    bannerDescription.value = data.description || "";
+    if (data.imageUrl) bannerPreview.src = data.imageUrl;
+  });
+
+  // SIMPAN JUDUL + DESKRIPSI
+  saveBtn.addEventListener("click", async () => {
+    const title = bannerTitleInput.value.trim();
+    const description = bannerDescription.value.trim();
+
+    if (!description) {
+      alert("Deskripsi banner tidak boleh kosong!");
+      return;
+    }
+
+    try {
+      await update(ref(db, "banner"), {
+        title: title,
+        description: description
+      });
+
+      alert("Banner berhasil disimpan");
+    } catch (err) {
+      console.error(err);
+      alert("Gagal menyimpan banner");
+    }
+  });
+</script>
+
+
+<script>
+  console.log(typeof firebase);
+</script>
+
+
+  </body>
+</html>
