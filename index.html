@@ -1408,7 +1408,9 @@ onValue(bannerRef, (snapshot) => {
 
   if (data.title) bannerTitle.textContent = data.title;
   if (data.description) bannerDescription.textContent = data.description;
-  if (data.imageBase64) bannerImage.src = data.imageBase64;
+  if (data.imageUrl) {
+    bannerImage.src = data.imageUrl + "?t=" + Date.now(); // pastikan cache-busting
+  }
 });
 </script>
 
